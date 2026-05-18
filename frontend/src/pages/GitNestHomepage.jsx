@@ -1,46 +1,48 @@
-import {
-    GitBranch,
-    GitPullRequest,
-    FolderGit2,
-    ShieldCheck,
-    Code2,
-    Sparkles,
-    Users,
-    Workflow,
-    Star,
-    ArrowRight,
-} from "lucide-react";
 
-export default function GitNestHomepage() {
-    const features = [
-        {
-            title: "Version Control",
-            desc: "Create repositories, branches, pull requests, and commits with a modern collaborative workflow.",
-            icon: <GitBranch className="w-7 h-7 text-emerald-400" />,
-        },
-        {
-            title: "AI Workflows",
-            desc: "AI-assisted code reviews, commit summaries, onboarding, and contributor guidance.",
-            icon: <Sparkles className="w-7 h-7 text-emerald-400" />,
-        },
-        {
-            title: "Team Collaboration",
-            desc: "Built for contributors, maintainers, and open-source teams working together.",
-            icon: <Users className="w-7 h-7 text-emerald-400" />,
-        },
-        {
-            title: "Developer First",
-            desc: "Clean APIs, scalable architecture, and a contributor-friendly structure from day one.",
-            icon: <ShieldCheck className="w-7 h-7 text-emerald-400" />,
-        },
-    ];
+    import {
+        GitBranch,
+        GitPullRequest,
+        FolderGit2,
+        ShieldCheck,
+        Code2,
+        Sparkles,
+        Users,
+        Workflow,
+        Star,
+        ArrowRight,
+    } from "lucide-react";
+    import { Link } from 'react-router-dom';
 
-    const stats = [
-        { value: "MERN", label: "Full Stack" },
-        { value: "AI", label: "Developer Workflows" },
-        { value: "OSS", label: "Open Source" },
-        { value: "GSSoC", label: "Community Driven" },
-    ];
+    export default function GitNestHomepage() {
+        const features = [
+            {
+                title: "Version Control",
+                desc: "Create repositories, branches, pull requests, and commits with a modern collaborative workflow.",
+                icon: <GitBranch className="w-7 h-7 text-emerald-400" />,
+            },
+            {
+                title: "AI Workflows",
+                desc: "AI-assisted code reviews, commit summaries, onboarding, and contributor guidance.",
+                icon: <Sparkles className="w-7 h-7 text-emerald-400" />,
+            },
+            {
+                title: "Team Collaboration",
+                desc: "Built for contributors, maintainers, and open-source teams working together.",
+                icon: <Users className="w-7 h-7 text-emerald-400" />,
+            },
+            {
+                title: "Developer First",
+                desc: "Clean APIs, scalable architecture, and a contributor-friendly structure from day one.",
+                icon: <ShieldCheck className="w-7 h-7 text-emerald-400" />,
+            },
+        ];
+
+        const stats = [
+            { value: "MERN", label: "Full Stack" },
+            { value: "AI", label: "Developer Workflows" },
+            { value: "OSS", label: "Open Source" },
+            { value: "GSSoC", label: "Community Driven" },
+        ];
 
         return (
             <div className="min-h-screen bg-[#06070a] text-white overflow-hidden">
@@ -92,22 +94,10 @@ export default function GitNestHomepage() {
                                 Documentation
                             </button>
 
-            <button className="px-5 py-2 rounded-xl bg-emerald-400 text-black font-semibold text-sm hover:scale-[1.02] transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2">
-                Start Contributing
-                <ArrowRight className="w-4 h-4" />
-            </button>
-        </div>
-    </div>
-</header>
-
-            {/* Hero */}
-            <section className="relative">
-                <div className="max-w-7xl mx-auto px-6 pt-28 pb-24 grid lg:grid-cols-2 gap-16 items-center">
-                    {/* Left */}
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 text-emerald-300 text-sm mb-8">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            Open Source • GSSoC 2026
+                            <Link to="/register" className="px-5 py-2 rounded-xl bg-emerald-400 text-black font-semibold text-sm hover:scale-[1.02] transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                                Start Contributing
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-black leading-none tracking-tight mb-8">
@@ -121,10 +111,14 @@ export default function GitNestHomepage() {
                             GitNest is a full-featured GitHub-inspired platform built with the MERN stack. Create repositories, browse code, manage issues, review pull requests, and collaborate — all in one open-source developer ecosystem.
                         </p>
 
-                        <div className="flex flex-wrap gap-4 mb-14">
-                            <button className="px-7 py-4 rounded-2xl bg-emerald-400 text-black font-semibold hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20">
-                                Explore Repositories
-                            </button>
+                            <p className="text-lg text-zinc-400 leading-8 max-w-2xl mb-10">
+                                GitNest is a full-featured GitHub-inspired platform built with the MERN stack. Create repositories, browse code, manage issues, review pull requests, and collaborate — all in one open-source developer ecosystem.
+                            </p>
+
+                            <div className="flex flex-wrap gap-4 mb-14">
+                                <Link to="/login" className="px-7 py-4 rounded-2xl bg-emerald-400 text-black font-semibold hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 inline-block text-center">
+                                    Explore Repositories
+                                </Link>
 
                                 <button className="px-7 py-4 rounded-2xl border border-white/10 bg-white/[0.03] text-zinc-200 hover:bg-white/[0.06] transition-all">
                                     View Architecture
@@ -288,10 +282,10 @@ export default function GitNestHomepage() {
                                 the entire frontend ecosystem.
                             </p>
 
-                            <div className="flex flex-wrap justify-center gap-4">
-                                <button className="px-7 py-4 rounded-2xl bg-emerald-400 text-black font-semibold hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20">
-                                    Contribute Now
-                                </button>
+                                <div className="flex flex-wrap justify-center gap-4">
+                                    <Link to="/register" className="px-7 py-4 rounded-2xl bg-emerald-400 text-black font-semibold hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 inline-block text-center">
+                                        Contribute Now
+                                    </Link>
 
                                     <button className="px-7 py-4 rounded-2xl border border-white/10 bg-white/[0.03] text-zinc-200 hover:bg-white/[0.06] transition-all">
                                         Read Contribution Guide
