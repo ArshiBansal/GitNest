@@ -8,20 +8,58 @@ const Register = () => {
     email: '',
     password: '',
   });
+  const [validationErrors, setValidationErrors] = useState({
+    username: '',
+    email: '',
+    password: '',
+  });
 
   const { register, loading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
   useEffect(() => {
     clearError();
   }, [clearError]);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (value.trim()) {
+      setValidationErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    clearError();
+
+    const usernameTrimmed = formData.username.trim();
+    const emailTrimmed = formData.email.trim();
+    const passwordTrimmed = formData.password.trim();
+
+    let errors = {};
+    if (!usernameTrimmed) {
+      errors.username = 'Username cannot be empty or whitespace only';
+    }
+    if (!emailTrimmed) {
+      errors.email = 'Email address cannot be empty or whitespace only';
+    }
+    if (!passwordTrimmed) {
+      errors.password = 'Password cannot be empty or whitespace only';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setValidationErrors({ username: '', email: '', password: '' });
+
     try {
-      await register(formData);
+      await register({
+        username: usernameTrimmed,
+        email: emailTrimmed,
+        password: passwordTrimmed,
+      });
       navigate('/');
     } catch (err) {
       console.error(err);
@@ -38,47 +76,56 @@ const Register = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="rounded-md shadow-sm space-y-3">
             <div>
               <input
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
               />
+              {validationErrors.username && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{validationErrors.username}</p>
+              )}
             </div>
             <div>
               <input
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
               />
+              {validationErrors.email && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{validationErrors.email}</p>
+              )}
             </div>
             <div>
               <input
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm transition-colors"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
               />
+              {validationErrors.password && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{validationErrors.password}</p>
+              )}
             </div>
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              disabled={loading || !formData.username.trim() || !formData.email.trim() || !formData.password.trim()}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? 'Registering...' : 'Register'}
             </button>
