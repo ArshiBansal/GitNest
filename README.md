@@ -159,7 +159,9 @@ gitnest/
         ├── store/       
         ├── hooks/         
         ├── api/         
-        └── utils    
+        └── utils
+```
+
 ## 🎨 UI Components
 
 GitNest includes a comprehensive component library with full dark mode support:
@@ -183,9 +185,10 @@ GitNest includes a comprehensive component library with full dark mode support:
 
 For complete component documentation and examples, see [`frontend/src/components/COMPONENTS_DOCUMENTATION.md`](frontend/src/components/COMPONENTS_DOCUMENTATION.md).
 
----
+
 
 ## 📁 Project Structure
+
 
 ```
 gitnest/
