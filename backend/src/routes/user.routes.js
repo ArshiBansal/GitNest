@@ -17,8 +17,12 @@ const router = express.Router();
 router.get('/:username', validate(usernameParamValidator), getUserProfile);
 router.get('/:username/followers', validate(usernameParamValidator), getFollowers);
 router.get('/:username/following', validate(usernameParamValidator), getFollowing);
+// Public routes
+router.get('/:username', getUserProfile);
+router.get('/:username/followers', getFollowers);
+router.get('/:username/following', getFollowing);
 
-//Protected routes
+// Protected routes
 router.put('/profile', protect, validate(updateProfileValidator), updateProfile);
 router.post('/:username/follow', protect, validate(usernameParamValidator), followUser);
 router.delete('/:username/follow', protect, validate(usernameParamValidator), unfollowUser);
