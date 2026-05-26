@@ -8,7 +8,7 @@
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-    "test:contracts": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest tests/contracts tests/integration --runInBand",
+    "test:contracts": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --config jest.contracts.config.js --runInBand",
     "contracts:snapshot": "node ../scripts/export-openapi.mjs src/docs/openapi.snapshot.json",
     "contracts:check": "node ../scripts/validate-openapi-compatibility.mjs src/docs/openapi.snapshot.json",
     "lint": "echo \"No linting configured\""
