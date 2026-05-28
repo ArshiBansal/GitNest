@@ -149,12 +149,10 @@ export default function GitNestHomepage() {
               </span>
             </h1>
 
-            <p className="text-lg text-zinc-400 leading-8 max-w-2xl mb-10">
-              GitNest is a full-featured GitHub-inspired platform built with the
-              MERN stack. Create repositories, browse code, manage issues,
-              review pull requests, and collaborate — all in one open-source
-              developer ecosystem.
-            </p>
+                        {/* DESCRIPTION */}
+                        <p className="text-[16px] leading-7 text-zinc-950 dark:text-zinc-300 max-w-2xl mb-5 mt-2">
+                            GitNest is a full-featured GitHub-inspired platform built with the MERN stack. Create repositories, browse code, manage issues, review pull requests, and collaborate — all in one open-source developer ecosystem.
+                        </p>
 
             <div className="flex flex-wrap gap-4 mb-14">
               <Link
@@ -271,16 +269,77 @@ export default function GitNestHomepage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section
-        id="features"
-        className="relative py-28 border-t border-zinc-200 dark:border-white/5"
-      >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="max-w-3xl mb-16">
-            <p className="text-emerald-400 text-sm font-semibold tracking-widest uppercase mb-4">
-              Platform Features
-            </p>
+            {/* FEATURES */}
+            <section
+                id="features"
+                className="relative py-32 overflow-hidden border-t border-zinc-200 dark:border-white/5 bg-[#f7faf9] dark:bg-[#080b11]"
+            >
+
+                {/* BACKGROUND DECOR */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            backgroundImage:
+                                "radial-gradient(circle at 20% 18%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.45) 14%, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0) 58%), linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.12) 24%, rgba(255,255,255,0) 52%)",
+                        }}
+                    />
+
+                    {/* LEFT BLUR */}
+                    <div className="absolute left-[-120px] top-[45%] w-[220px] h-[220px] rounded-full bg-blue-200/25 blur-3xl" />
+
+                    <div className="absolute -top-24 right-12 h-80 w-80 rounded-full bg-white/50 blur-3xl dark:bg-cyan-400/10" />
+
+                    <div className="absolute inset-0 opacity-[0.04]"
+                        style={{
+                            backgroundImage:
+                                "linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)",
+                            backgroundSize: "80px 80px",
+                        }}
+                    />
+
+                    {/* RIGHT CURVE */}
+                    <svg
+                        className="absolute right-0 top-20 opacity-40"
+                        width="420"
+                        height="240"
+                        viewBox="0 0 420 240"
+                        fill="none"
+                    >
+                        <path
+                            d="M0 120C120 20 220 220 420 40"
+                            stroke="url(#paint0_linear)"
+                            strokeWidth="2"
+                        />
+
+                        <defs>
+                            <linearGradient id="paint0_linear" x1="0" y1="0" x2="420" y2="0">
+                                <stop stopColor="#00dc82" />
+                                <stop offset="1" stopColor="#4fd1ff" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    {/* DOT GRID */}
+                    <div className="absolute top-20 right-[18%] grid grid-cols-8 gap-4 opacity-20">
+                        {Array.from({ length: 40 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="w-1 h-1 rounded-full bg-[#4fd1ff]"
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+
+                    {/* SECTION HEADER */}
+                    <div className="max-w-4xl mb-20">
+
+                        <p className="text-[15px] font-bold tracking-[0.25em] uppercase bg-gradient-to-r from-[#00dc82] to-[#4fd1ff] bg-clip-text text-transparent mb-6">
+                            Platform Features
+                        </p>
 
             <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6">
               Designed for contributors and maintainers
@@ -293,67 +352,274 @@ export default function GitNestHomepage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="group rounded-3xl border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.03] p-7 hover:border-emerald-400/20 hover:bg-zinc-100 dark:hover:bg-white/[0.05] transition-all duration-300"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-emerald-400/10 border border-emerald-400/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  {feature.icon}
-                </div>
+                    {/* FEATURE GRID */}
+                    <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
+
+                        {[
+                            {
+                                title: "Version Control",
+                                desc: "Create repositories, branches, pull requests, and commits with a modern collaborative workflow.",
+                                icon: <GitBranch className="w-7 h-7 text-[#00dc82]" />,
+                                color: "#00dc82",
+                                bg: "from-[#ecfff7] to-[#f8fffc]",
+                                darkBg: "dark:from-[#0b1915] dark:to-[#0f1f1a]",
+                            },
+                            {
+                                title: "AI Workflows",
+                                desc: "AI-assisted code reviews, commit summaries, onboarding, and contributor guidance.",
+                                icon: <Sparkles className="w-7 h-7 text-[#3b82f6]" />,
+                                color: "#3b82f6",
+                                bg: "from-[#f2f7ff] to-[#f9fbff]",
+                                darkBg: "dark:from-[#0b1524] dark:to-[#101a2c]",
+                            },
+                            {
+                                title: "Team Collaboration",
+                                desc: "Built for contributors, maintainers, and open-source teams working together.",
+                                icon: <Users className="w-7 h-7 text-[#9333ea]" />,
+                                color: "#9333ea",
+                                bg: "from-[#faf5ff] to-[#fcfaff]",
+                                darkBg: "dark:from-[#171022] dark:to-[#120f1e]",
+                            },
+                            {
+                                title: "Developer First",
+                                desc: "Clean APIs, scalable architecture, and a contributor-friendly structure from day one.",
+                                icon: <ShieldCheck className="w-7 h-7 text-[#f97316]" />,
+                                color: "#f97316",
+                                bg: "from-[#fff7f0] to-[#fffaf7]",
+                                darkBg: "dark:from-[#21140d] dark:to-[#18110e]",
+                            },
+                        ].map((feature) => (
+
+                            <div
+                                key={feature.title}
+                                className={`group relative overflow-hidden rounded-[34px] border border-white/60 dark:border-white/5 bg-gradient-to-br ${feature.bg} ${feature.darkBg} backdrop-blur-xl p-8 shadow-[0_10px_40px_rgba(15,23,42,0.05)] hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)] transition-all duration-500`}
+                            >
+
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/55 via-white/15 to-transparent dark:from-white/6 dark:via-white/0 pointer-events-none" />
+
+                                {/* TOP GLOW */}
+                                <div
+                                    className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20"
+                                    style={{
+                                        background: feature.color,
+                                    }}
+                                />
+
+                                {/* ICON */}
+                                <div
+                                    className="relative w-20 h-20 rounded-[24px] border border-white/60 flex items-center justify-center shadow-inner mb-10"
+                                    style={{
+                                        background: `${feature.color}10`,
+                                    }}
+                                >
+                                    {feature.icon}
+                                </div>
 
                 <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
 
-                <p className="text-zinc-400 leading-7 text-sm">
-                  {feature.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                                {/* ACCENT */}
+                                <div className="flex items-center gap-2 mb-6">
 
-      {/* Contributor CTA */}
-      <section
-        id="contributors"
-        className="relative py-28 border-t border-zinc-200 dark:border-white/5"
-      >
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <div className="rounded-[2rem] border border-zinc-200 dark:border-white/5 bg-gradient-to-br from-emerald-400/10 to-cyan-500/5 p-14 overflow-hidden relative">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_50%)]" />
+                                    <div
+                                        className="w-10 h-1 rounded-full"
+                                        style={{
+                                            background: feature.color,
+                                        }}
+                                    />
 
-            <div className="relative z-10">
-              <p className="text-emerald-400 font-semibold tracking-widest uppercase text-sm mb-5">
-                Open Source Collaboration
-              </p>
+                                    <div
+                                        className="w-2 h-2 rounded-full"
+                                        style={{
+                                            background: feature.color,
+                                        }}
+                                    />
+                                </div>
 
-              <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6">
-                Build GitNest together
-              </h2>
+                                {/* DESCRIPTION */}
+                                <p className="text-[17px] leading-9 text-[#64748b] dark:text-zinc-400 relative z-10">
+                                    {feature.desc}
+                                </p>
 
-              <p className="text-zinc-400 text-lg leading-8 max-w-3xl mx-auto mb-10">
-                This homepage establishes the design system, visual hierarchy,
-                spacing patterns, component styling, and interaction language
-                for the entire frontend ecosystem.
-              </p>
+                                {/* BOTTOM CURVE */}
+                                <svg
+                                    className="absolute bottom-0 left-0 opacity-20"
+                                    width="320"
+                                    height="90"
+                                    viewBox="0 0 320 90"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M0 30C80 100 180 0 320 70"
+                                        stroke={feature.color}
+                                        strokeWidth="2"
+                                    />
+                                </svg>
 
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link
-                  to="/register"
-                  className="px-7 py-4 rounded-2xl bg-emerald-400 text-black font-semibold hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/20 inline-block text-center"
-                >
-                  Contribute Now
-                </Link>
+                                {/* FLOATING DOT */}
+                                <div
+                                    className="absolute bottom-6 right-6 w-6 h-6 rounded-full flex items-center justify-center"
+                                    style={{
+                                        background: `${feature.color}20`,
+                                    }}
+                                >
+                                    <div
+                                        className="w-3 h-3 rounded-full"
+                                        style={{
+                                            background: feature.color,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+            {/* Contributor CTA */}
+            <section
+                id="contributors"
+                className="relative py-32 overflow-hidden border-t border-[#dce7e3] dark:border-white/5 bg-[#f7faf9] dark:bg-[#080b11]"
+            >
 
-                <button className="px-7 py-4 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.06] transition-all">
-                  Read Contribution Guide
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+                {/* BACKGROUND EFFECTS */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+
+                    {/* MAIN GLOW */}
+                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-r from-[#00dc82]/10 to-[#4fd1ff]/10 blur-3xl rounded-full" />
+
+                    {/* LEFT BLOB */}
+                    <div className="absolute left-[-120px] top-28 w-[320px] h-[320px] rounded-full bg-gradient-to-br from-[#a7f3d0]/40 to-[#d9f99d]/20 blur-2xl" />
+
+                    {/* SMALL FLOATING CIRCLE */}
+                    <div className="absolute left-[14%] bottom-24 w-14 h-14 rounded-full bg-gradient-to-br from-[#d9f99d]/70 to-[#bef264]/40 blur-sm border border-white/40" />
+
+                    {/* RIGHT CODE ICON GLOW */}
+                    <div className="absolute right-[8%] top-[26%] w-[260px] h-[260px] rounded-full bg-gradient-to-br from-[#00dc82]/20 to-[#fde047]/20 blur-3xl" />
+
+                    {/* DOT GRID */}
+                    <div className="absolute top-16 right-[12%] grid grid-cols-5 gap-5 opacity-20">
+                        {Array.from({ length: 25 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="w-1.5 h-1.5 rounded-full bg-[#00dc82]"
+                            />
+                        ))}
+                    </div>
+
+                    {/* LEFT CURVE */}
+                    <svg
+                        className="absolute left-0 bottom-10 opacity-30"
+                        width="420"
+                        height="180"
+                        viewBox="0 0 420 180"
+                        fill="none"
+                    >
+                        <path
+                            d="M0 40C120 120 180 0 300 90C350 130 390 110 420 60"
+                            stroke="url(#curveLeft)"
+                            strokeWidth="2"
+                        />
+
+                        <defs>
+                            <linearGradient id="curveLeft" x1="0" y1="0" x2="420" y2="0">
+                                <stop stopColor="#4fd1ff" />
+                                <stop offset="1" stopColor="#00dc82" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    {/* RIGHT CURVE */}
+                    <svg
+                        className="absolute right-0 top-36 opacity-30"
+                        width="420"
+                        height="220"
+                        viewBox="0 0 420 220"
+                        fill="none"
+                    >
+                        <path
+                            d="M0 120C120 20 240 220 420 60"
+                            stroke="url(#curveRight)"
+                            strokeWidth="2"
+                        />
+
+                        <defs>
+                            <linearGradient id="curveRight" x1="0" y1="0" x2="420" y2="0">
+                                <stop stopColor="#fde047" />
+                                <stop offset="1" stopColor="#00dc82" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+
+                    {/* MAIN CARD */}
+                    <div className="relative overflow-hidden rounded-[42px] border border-[#b8f0dd] bg-gradient-to-br from-white via-[#f7fffc] to-[#f4fffb] dark:from-[#11151d] dark:to-[#0c1017] shadow-[0_20px_80px_rgba(16,185,129,0.08)] px-8 md:px-16 py-14 text-center">
+
+                        {/* FLOATING CODE CARD */}
+                        <div className="hidden lg:flex absolute right-16 top-24 w-[140px] h-[140px] rounded-[36px] border border-white/60 bg-white/60 backdrop-blur-xl shadow-[0_20px_60px_rgba(16,185,129,0.15)] items-center justify-center rotate-[16deg]">
+
+                            <div className="absolute inset-0 rounded-[36px] bg-gradient-to-br from-[#00dc82]/10 to-[#4fd1ff]/10" />
+
+                            <div className="relative text-6xl font-black bg-gradient-to-r from-[#00dc82] to-[#4fd1ff] bg-clip-text text-transparent">
+                                {"</>"}
+                            </div>
+                        </div>
+
+                        {/* TOP BADGE */}
+                        <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-[#b8f0dd] bg-white/70 backdrop-blur-xl shadow-sm mb-10">
+
+                            <Users className="w-5 h-5 text-[#00b86b]" />
+
+                            <span className="text-[15px] font-bold tracking-[0.18em] uppercase bg-gradient-to-r from-[#00b86b] to-[#4fd1ff] bg-clip-text text-transparent">
+                                Open Source Collaboration
+                            </span>
+                        </div>
+
+                        {/* TITLE */}
+                        <h2 className="text-[52px] md:text-[82px] leading-[0.95] tracking-[-0.06em] font-black text-[#071138] dark:text-white mb-8">
+
+                            Build{" "}
+
+                            <span className="bg-gradient-to-r from-[#00dc82] via-[#22c55e] to-[#4fd1ff] bg-clip-text text-transparent">
+                                GitNest
+                            </span>
+
+                            {" "}together
+
+                        </h2>
+
+                        {/* DESCRIPTION */}
+                        <p className="text-[22px] leading-[2.1rem] text-[#64748b] dark:text-zinc-400 max-w-4xl mx-auto mb-14">
+                            This homepage establishes the design system, visual hierarchy, spacing patterns, component styling, and interaction language for the entire frontend ecosystem.
+                        </p>
+
+                        {/* BUTTONS */}
+                        <div className="flex flex-wrap justify-center gap-6">
+
+                            {/* PRIMARY BTN */}
+                            <Link
+                                to="/register"
+                                className="group px-10 py-5 rounded-[22px] bg-gradient-to-r from-[#00b86b] via-[#00dc82] to-[#7bf542] text-white font-bold text-[18px] shadow-[0_15px_40px_rgba(16,185,129,0.25)] hover:scale-[1.03] transition-all duration-300 flex items-center gap-4"
+                            >
+
+                                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+
+                                Contribute Now
+
+                            </Link>
+
+                            {/* SECONDARY BTN */}
+                            <button className="group px-10 py-5 rounded-[22px] border border-[#dbe7e2] bg-white/80 backdrop-blur-xl text-[#0f172a] font-semibold text-[18px] hover:border-[#00dc82]/40 hover:bg-white transition-all duration-300 flex items-center gap-4 shadow-sm">
+
+                                <ShieldCheck className="w-5 h-5 text-[#00b86b]" />
+
+                                Read Contribution Guide
+
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
       {/* Footer */}
       <footer className="border-t border-zinc-200 dark:border-white/5 py-14">
@@ -380,104 +646,114 @@ export default function GitNestHomepage() {
               </div>
             </div>
 
-            <p className="text-sm text-zinc-500 leading-7 max-w-sm">
-              A modern collaborative development platform inspired by GitHub and
-              built for contributors, maintainers, and developer communities.
-            </p>
-          </div>
+                            {/* DESCRIPTION */}
+                            <p className="text-[15px] leading-8 text-[#64748b] max-w-sm mb-8">
+                                A modern collaborative development platform inspired by GitHub and built for open source communities worldwide.
+                            </p>
+
+                            {/* COPYRIGHT */}
+                            <p className="text-[15px] text-[#7c8aa5] leading-7">
+                                © 2026 GitNest. Built for open-source collaboration.
+                            </p>
+                        </div>
 
           <div>
             <h4 className="font-semibold mb-5">Platform</h4>
 
-            <div className="space-y-3 text-sm text-zinc-500">
-              <a href="#" className="block hover:text-white transition-colors">
-                Repositories
-              </a>
+                            <div className="space-y-3">
 
-              <a href="#" className="block hover:text-white transition-colors">
-                Pull Requests
-              </a>
+                                {[
+                                    "Repositories",
+                                    "Pull Requests",
+                                    "AI Workflows",
+                                    "Discussions",
+                                ].map((item) => (
+                                    <a
+                                        key={item}
+                                        href="#"
+                                        className="group flex items-center gap-3 text-[17px] text-[#475569] hover:text-[#00b86b] transition-all duration-300"
+                                    >
 
-              <a href="#" className="block hover:text-white transition-colors">
-                AI Workflows
-              </a>
+                                        <div className="w-2 h-2 rounded-full bg-[#00c97b] group-hover:scale-150 transition-transform" />
 
-              <a href="#" className="block hover:text-white transition-colors">
-                Discussions
-              </a>
-            </div>
-          </div>
+                                        {item}
+
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
 
           <div>
             <h4 className="font-semibold mb-5">Developers</h4>
 
-            <div className="space-y-3 text-sm text-zinc-500">
-              <a href="#" className="block hover:text-white transition-colors">
-                Contribution Guide
-              </a>
+                            <div className="space-y-3">
 
-              <a href="#" className="block hover:text-white transition-colors">
-                Roadmap
-              </a>
+                                {[
+                                    "Contribution Guide",
+                                    "Roadmap",
+                                    "API Docs",
+                                    "Architecture",
+                                ].map((item) => (
+                                    <a
+                                        key={item}
+                                        href="#"
+                                        className="group flex items-center gap-3 text-[17px] text-[#475569] hover:text-[#00b86b] transition-all duration-300"
+                                    >
 
-              <a href="#" className="block hover:text-white transition-colors">
-                API Docs
-              </a>
+                                        <div className="w-2 h-2 rounded-full bg-[#00c97b] group-hover:scale-150 transition-transform" />
 
-              <a href="#" className="block hover:text-white transition-colors">
-                Architecture
-              </a>
-            </div>
-          </div>
+                                        {item}
+
+                                    </a>
+                                ))}
+
+                                {/* LEGAL LINK */}
+                                <Link
+                                    to="/terms"
+                                    className="group flex items-center gap-3 text-[16px] text-[#475569] hover:text-[#00b86b] transition-all duration-300"
+                                >
+                                    <div className="w-2 h-2 rounded-full bg-[#00c97b] group-hover:scale-150 transition-transform" />
+
+                                    Terms & Conditions
+                                </Link>
+                            </div>
+                        </div>
 
           <div>
             <h4 className="font-semibold mb-5">Tech Stack</h4>
 
-            <div className="flex flex-wrap gap-3">
-              {[
-                "React",
-                "Tailwind",
-                "Node.js",
-                "MongoDB",
-                "Express",
-                "Socket.io",
-                "JWT",
-                "AI",
-              ].map((tech) => (
-                <span
-                  key={tech}
-                  className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.03] text-xs text-zinc-600 dark:text-zinc-400"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
+                            <div className="flex flex-wrap gap-2">
+
+                                {[
+                                    "React",
+                                    "Tailwind",
+                                    "Node.js",
+                                    "MongoDB",
+                                    "Express",
+                                    "Socket.io",
+                                    "JWT",
+                                    "AI",
+                                ].map((tech) => (
+                                    <div
+                                        key={tech}
+                                        className="px-5 py-3 rounded-2xl border border-[#e6ece9] bg-white shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-[15px] font-medium text-[#334155] flex items-center gap-3"
+                                    >
+
+                                        <div className="w-2 h-2 rounded-full bg-[#00c97b]" />
+
+                                        {tech}
+
+                                    </div>
+                                ))}
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </footer>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-600">
-          <p>© 2026 GitNest. Built for open-source collaboration.</p>
-
-          <div className="flex items-center gap-6">
-            <Link to="/privacy" className="hover:text-white transition-colors">
-              Privacy
-            </Link>
-
-            <Link to="/terms" className="hover:text-white transition-colors">
-              Terms
-            </Link>
-
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
-            >
-              GitHub
-            </a>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
+    );
+};
