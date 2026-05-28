@@ -1,6 +1,10 @@
 import 'dotenv/config';
+import connectDB from './config/db.js';
+import createApp from './app.js';
+
 if (!process.env.JWT_SECRET) {
-  throw new Error('FATAL: JWT_SECRET environment variable is not set. Refusing to start.');
+  console.error('FATAL: JWT_SECRET is not configured. Server cannot start securely.');
+  process.exit(1);
 }
 
 import express from 'express';
@@ -37,20 +41,22 @@ app.use(attachRequestIdToResponse);
 
 morgan.token('request-id', (req) => req.requestId || '-');
 app.use(morgan(':request-id :method :url :status :response-time ms - :res[content-length]'));
+const app = createApp();
+const PORT = process.env.PORT || 5000;
 
-app.use('/health', healthRoute);
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/repositories', repositoryRoutes);
-app.use('/api/v1/activities', activityRoutes);
+await connectDB();
 
-app.use((req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404, ERROR_CODES.NOT_FOUND));
-});
+const startServer = async () => {
+  try {
+    await connectDB();
 
-app.use(errorHandler);
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to connect database:', error);
+    process.exit(1);
+  }
+};
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server running on port ${PORT}`);
-});
+startServer();
