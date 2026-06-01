@@ -157,6 +157,13 @@ export default function GitNestHomepage() {
                         </Link>
 
                         <Link
+                            to="/contact"
+                            className="hidden md:flex px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/20 bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl text-zinc-700 dark:text-zinc-200 hover:shadow-lg transition-all"
+                        >
+                            Contact Us
+                        </Link>
+
+                        <Link
                             to="/register"
                             className="hidden lg:flex group px-5 rounded-2xl bg-gradient-to-r from-[#00dc82] via-[#2be4da] to-[#4fd1ff] text-black font-bold shadow-[0_10px_40px_rgba(0,220,130,0.35)] hover:-translate-x-1 transition-all duration-300 items-center gap-2"
                         >
@@ -204,6 +211,14 @@ export default function GitNestHomepage() {
                                     className="w-full text-center rounded-2xl border px-4 py-3"
                                 >
                                     Documentation
+                                </Link>
+
+                                <Link
+                                    to="/contact"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="w-full text-center rounded-2xl border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-800 dark:text-white"
+                                >
+                                    Contact Us
                                 </Link>
 
                                 <Link
