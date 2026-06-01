@@ -56,29 +56,11 @@ export const optionalProtect = asyncHandler(async (req, _res, next) => {
   } catch {
     // Invalid or expired token — treat as unauthenticated, do not reject
   }
-export const optionalAuth = asyncHandler(async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token || !process.env.JWT_SECRET) {
-    return next();
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
-  } catch {
-    // Silently ignore invalid tokens
-  }
-
   next();
 });
+
+// Alias used by search routes — identical behaviour to optionalProtect
+export const optionalAuth = optionalProtect;
 
 /**
  * Resource-level authorization guard for pull request write operations.
