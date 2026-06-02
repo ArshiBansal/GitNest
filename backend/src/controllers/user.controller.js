@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
 import User from '../models/User.model.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import AppError from '../utils/AppError.js';
@@ -6,17 +7,46 @@ import { sendSuccess } from '../utils/responseHandlers.js';
 import paginate, { buildPaginationMeta } from '../utils/paginate.js';
 import SagaOrchestrator from '../services/saga/sagaOrchestrator.js';
 import eventEmitter from '../events/eventEmitter.js';
+import { getRedisClient } from '../config/redis.js';
 
 export const getUserProfile = asyncHandler(async (req, res, next) => {
   const { username } = req.params;
+  const cacheKey = `user:profile:${username}`;
+  const redis = getRedisClient();
 
-  const user = await User.findOne({ username: username.toLowerCase() });
+  if(redis) {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return sendSuccess(res, 200, JSON.parse(cached), 'User profile fetched successfully');
+    }
+  }
+
+  let user;
+
+  if(mongoose.Types.ObjectId.isValid(username)) {
+    user = await User.findById(username).lean();
+  }
+
+  if(!user) {
+    user = await User.findOne({ username: username.toLowerCase() }).lean();
+  }
 
   if (!user) {
     return next(new AppError('User not found', 404));
   }
 
-  sendSuccess(res, 200, user, 'User profile fetched successfully');
+  const userObj = {
+    ...user,
+    _id: user._id.toString(),
+    createdAt: new Date(user.createdAt).toISOString(),
+    updatedAt: new Date(user.updatedAt).toISOString(),
+  };
+
+  if (redis) {
+    await redis.set(cacheKey, JSON.stringify(userObj), 'EX', 60);
+  }
+
+  sendSuccess(res, 200, userObj, 'User profile fetched successfully');
 });
 
 // Follow a user with transaction-safe atomicity
@@ -32,10 +62,11 @@ export const followUser = asyncHandler(async (req, res, next) => {
   const followSteps = [
     {
       name: 'updateTargetFollowers',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.targetId, followers: { $ne: context.actorId } },
-          { $addToSet: { followers: context.actorId } }
+          { $addToSet: { followers: context.actorId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
@@ -44,28 +75,31 @@ export const followUser = asyncHandler(async (req, res, next) => {
           throw new AppError('Already following this user', 400);
         }
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         await User.updateOne(
           { _id: context.targetId },
-          { $pull: { followers: context.actorId } }
+          { $pull: { followers: context.actorId } },
+          { session }
         );
       }
     },
     {
       name: 'updateActorFollowing',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.actorId, following: { $ne: context.targetId } },
-          { $addToSet: { following: context.targetId } }
+          { $addToSet: { following: context.targetId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
         }
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         await User.updateOne(
           { _id: context.actorId },
-          { $pull: { following: context.targetId } }
+          { $pull: { following: context.targetId } },
+          { session }
         );
       }
     }
@@ -79,7 +113,6 @@ export const followUser = asyncHandler(async (req, res, next) => {
       { actorId, targetId, targetUsername: target.username }
     );
 
-    // Emit event for decoupled activity logging
     eventEmitter.emit('USER_FOLLOWED', {
       actorId,
       targetId,
@@ -108,31 +141,34 @@ export const unfollowUser = asyncHandler(async (req, res, next) => {
   const unfollowSteps = [
     {
       name: 'updateTargetFollowers',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.targetId },
-          { $pull: { followers: context.actorId } }
+          { $pull: { followers: context.actorId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
         }
         context.wasFollowing = result.modifiedCount > 0;
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         if (context.wasFollowing) {
           await User.updateOne(
             { _id: context.targetId, followers: { $ne: context.actorId } },
-            { $addToSet: { followers: context.actorId } }
+            { $addToSet: { followers: context.actorId } },
+            { session }
           );
         }
       }
     },
     {
       name: 'updateActorFollowing',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.actorId },
-          { $pull: { following: context.targetId } }
+          { $pull: { following: context.targetId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
@@ -142,11 +178,12 @@ export const unfollowUser = asyncHandler(async (req, res, next) => {
           throw new AppError('You were not following this user', 400);
         }
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         if (context.wasFollowed) {
           await User.updateOne(
             { _id: context.actorId, following: { $ne: context.targetId } },
-            { $addToSet: { following: context.targetId } }
+            { $addToSet: { following: context.targetId } },
+            { session }
           );
         }
       }
@@ -161,7 +198,6 @@ export const unfollowUser = asyncHandler(async (req, res, next) => {
       { actorId, targetId, targetUsername: target.username }
     );
 
-    // Emit event for decoupled activity logging
     eventEmitter.emit('USER_UNFOLLOWED', {
       actorId,
       targetId,
