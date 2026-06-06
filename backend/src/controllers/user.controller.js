@@ -8,6 +8,8 @@ import paginate, { buildPaginationMeta } from '../utils/paginate.js';
 import SagaOrchestrator from '../services/saga/sagaOrchestrator.js';
 import eventEmitter from '../events/eventEmitter.js';
 import { getRedisClient } from '../config/redis.js';
+import { logActivity } from '../services/activity.service.js';
+import ACTIVITY_TYPES from '../constants/activityTypes.js';
 
 export const getUserProfile = asyncHandler(async (req, res, next) => {
   const { username } = req.params;
@@ -62,10 +64,11 @@ export const followUser = asyncHandler(async (req, res, next) => {
   const followSteps = [
     {
       name: 'updateTargetFollowers',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.targetId, followers: { $ne: context.actorId } },
-          { $addToSet: { followers: context.actorId } }
+          { $addToSet: { followers: context.actorId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
@@ -74,28 +77,31 @@ export const followUser = asyncHandler(async (req, res, next) => {
           throw new AppError('Already following this user', 400);
         }
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         await User.updateOne(
           { _id: context.targetId },
-          { $pull: { followers: context.actorId } }
+          { $pull: { followers: context.actorId } },
+          { session }
         );
       }
     },
     {
       name: 'updateActorFollowing',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.actorId, following: { $ne: context.targetId } },
-          { $addToSet: { following: context.targetId } }
+          { $addToSet: { following: context.targetId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
         }
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         await User.updateOne(
           { _id: context.actorId },
-          { $pull: { following: context.targetId } }
+          { $pull: { following: context.targetId } },
+          { session }
         );
       }
     }
@@ -109,7 +115,18 @@ export const followUser = asyncHandler(async (req, res, next) => {
       { actorId, targetId, targetUsername: target.username }
     );
 
-    // Emit event for decoupled activity logging
+    // Evict cached profiles for both users — follower/following counts are
+    // included in the cached payload and are now stale for both sides.
+    const redis = getRedisClient();
+    if (redis) {
+      await Promise.all([
+        redis.del(`user:profile:${req.user.username}`),
+        redis.del(`user:profile:${req.user._id.toString()}`),
+        redis.del(`user:profile:${target.username}`),
+        redis.del(`user:profile:${target._id.toString()}`),
+      ]);
+    }
+
     eventEmitter.emit('USER_FOLLOWED', {
       actorId,
       targetId,
@@ -138,31 +155,34 @@ export const unfollowUser = asyncHandler(async (req, res, next) => {
   const unfollowSteps = [
     {
       name: 'updateTargetFollowers',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.targetId },
-          { $pull: { followers: context.actorId } }
+          { $pull: { followers: context.actorId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
         }
         context.wasFollowing = result.modifiedCount > 0;
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         if (context.wasFollowing) {
           await User.updateOne(
             { _id: context.targetId, followers: { $ne: context.actorId } },
-            { $addToSet: { followers: context.actorId } }
+            { $addToSet: { followers: context.actorId } },
+            { session }
           );
         }
       }
     },
     {
       name: 'updateActorFollowing',
-      execute: async (context) => {
+      execute: async (context, session) => {
         const result = await User.updateOne(
           { _id: context.actorId },
-          { $pull: { following: context.targetId } }
+          { $pull: { following: context.targetId } },
+          { session }
         );
         if (result.matchedCount === 0) {
           throw new AppError('User not found', 404);
@@ -172,11 +192,12 @@ export const unfollowUser = asyncHandler(async (req, res, next) => {
           throw new AppError('You were not following this user', 400);
         }
       },
-      compensate: async (context) => {
+      compensate: async (context, session) => {
         if (context.wasFollowed) {
           await User.updateOne(
             { _id: context.actorId, following: { $ne: context.targetId } },
-            { $addToSet: { following: context.targetId } }
+            { $addToSet: { following: context.targetId } },
+            { session }
           );
         }
       }
@@ -191,7 +212,17 @@ export const unfollowUser = asyncHandler(async (req, res, next) => {
       { actorId, targetId, targetUsername: target.username }
     );
 
-    // Emit event for decoupled activity logging
+    // Same as followUser — both sides carry stale counts after unfollow.
+    const redis = getRedisClient();
+    if (redis) {
+      await Promise.all([
+        redis.del(`user:profile:${req.user.username}`),
+        redis.del(`user:profile:${req.user._id.toString()}`),
+        redis.del(`user:profile:${target.username}`),
+        redis.del(`user:profile:${target._id.toString()}`),
+      ]);
+    }
+
     eventEmitter.emit('USER_UNFOLLOWED', {
       actorId,
       targetId,
@@ -257,15 +288,25 @@ export const updateProfile = asyncHandler(async (req, res, next) => {
 
   await user.save();
 
+  const redis = getRedisClient();
+  if (redis) {
+    await Promise.all([
+      redis.del(`user:profile:${user.username}`),
+      redis.del(`user:profile:${user._id.toString()}`),
+    ]);
+  }
+
   if (changedFields.length > 0) {
-    await logActivitySafely({
-      actor: req.user.id,
-      type: ACTIVITY_TYPES.PROFILE_UPDATED,
-      targetUser: req.user.id,
-      metadata: {
-        changedFields,
-      },
-    });
+    try {
+      await logActivity({
+        actor: req.user.id,
+        type: ACTIVITY_TYPES.PROFILE_UPDATED,
+        targetUser: req.user.id,
+        metadata: { changedFields },
+      });
+    } catch {
+      // Activity logging must never fail a profile update
+    }
   }
 
   sendSuccess(res, 200, user, 'Profile updated successfully');
