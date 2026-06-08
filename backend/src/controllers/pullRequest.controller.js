@@ -4,6 +4,7 @@ import path from 'path';
 import simpleGit from 'simple-git';
 import PullRequest from '../models/PullRequest.model.js';
 import Repository from '../models/Repository.model.js';
+import User from '../models/User.model.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import AppError from '../utils/AppError.js';
 import { sendSuccess } from '../utils/responseHandlers.js';
@@ -223,6 +224,20 @@ export const mergePullRequest = asyncHandler(async (req, res, next) => {
 
   if (!fs.existsSync(repoPath)) {
     throw new AppError('Repository directory not found on disk', 500);
+  }
+
+  // Evaluate branch protection rules before allowing the merge
+  const evalResult = await evaluateMerge({
+    repository,
+    pullRequest,
+    userId: req.user._id,
+  });
+
+  if (!evalResult.allowed) {
+    throw new AppError(
+      `Merge blocked by branch protection rules: ${evalResult.reasons.join(' ')}`,
+      403
+    );
   }
 
   const sagaId = req.headers['idempotency-key'] || uuidv4();
