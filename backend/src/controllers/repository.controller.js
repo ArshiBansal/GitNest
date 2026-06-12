@@ -3,6 +3,8 @@ import path from "path";
 import simpleGit from "simple-git";
 import mongoose from "mongoose";
 import Repository from "../models/Repository.model.js";
+import PullRequest from "../models/PullRequest.model.js";
+import Activity from "../models/Activity.model.js";
 import User from "../models/User.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import AppError from "../utils/AppError.js";
@@ -12,6 +14,7 @@ import ACTIVITY_TYPES from "../constants/activityTypes.js";
 import paginate, { buildPaginationMeta } from "../utils/paginate.js";
 import { generateReadme } from "../utils/templates/readmeTemplates.js";
 import { generateGitignore } from "../utils/templates/gitignoreTemplates.js";
+import eventEmitter from '../events/eventEmitter.js';
 
 // DRY helper — resolves a :username param to the owner document's _id.
 // Returns null when the username does not exist so callers can 404 cleanly.
@@ -86,6 +89,14 @@ export const createRepository = asyncHandler(async (req, res, next) => {
     // Prevent activity logging failures from blocking repository creation
   }
 
+  eventEmitter.emit('REPO_CREATED', {
+    actorId: req.user._id,
+    repositoryId: repository._id,
+    repoName: repository.name,
+    visibility: repository.visibility,
+    ipAddress: req.ip,
+  });
+
   sendSuccess(res, 201, repository, "Repository created successfully");
 });
 
@@ -153,8 +164,11 @@ export const updateRepository = asyncHandler(async (req, res, next) => {
   const { username, reponame } = req.params;
 
   const owner = await resolveOwner(username);
-  if (!owner || owner._id.toString() !== req.user.id) {
-    return next(new AppError("Repository not found or unauthorized", 404));
+  if (!owner) {
+    return next(new AppError("Repository not found", 404));
+  }
+  if (owner._id.toString() !== req.user.id) {
+    return next(new AppError("Forbidden: You do not own this repository", 403));
   }
 
   const repository = await Repository.findOne({
@@ -166,8 +180,60 @@ export const updateRepository = asyncHandler(async (req, res, next) => {
     return next(new AppError("Repository not found", 404));
   }
 
-  const { description, visibility, language, topics, defaultBranch } = req.body;
+  const { name, description, visibility, language, topics, defaultBranch } = req.body;
 
+  if (name && !/^[a-zA-Z0-9._-]+$/.test(name)) {
+    return next(
+      new AppError(
+        "Repository name contains invalid characters",
+        400
+      )
+    );
+  }
+  if (name && name !== repository.name) {
+    const existingRepo = await Repository.findOne({
+      owner: req.user.id,
+      name,
+    });
+
+    if (existingRepo) {
+      return next(
+        new AppError(
+          "You already have a repository with this name",
+          400
+        )
+      );
+    }
+
+    const oldRepoPath = path.resolve(
+      process.cwd(),
+      "repositories",
+      req.user.id,
+      repository.name
+    );
+
+    const newRepoPath = path.resolve(
+      process.cwd(),
+      "repositories",
+      req.user.id,
+      name
+    );
+
+    try {
+      if (fs.existsSync(oldRepoPath)) {
+        fs.renameSync(oldRepoPath, newRepoPath);
+      }
+    } catch {
+      return next(
+        new AppError(
+          "Failed to rename repository storage",
+          500
+        )
+      );
+    }
+
+    repository.name = name;
+  }
   repository.description = description ?? repository.description;
 
   repository.visibility = visibility ?? repository.visibility;
@@ -180,6 +246,14 @@ export const updateRepository = asyncHandler(async (req, res, next) => {
 
   await repository.save();
 
+  eventEmitter.emit('REPO_UPDATED', {
+    actorId: req.user._id,
+    repositoryId: repository._id,
+    repoName: repository.name,
+    changes: req.body,
+    ipAddress: req.ip,
+  });
+
   sendSuccess(res, 200, repository, "Repository updated successfully");
 });
 
@@ -187,8 +261,11 @@ export const deleteRepository = asyncHandler(async (req, res, next) => {
   const { username, reponame } = req.params;
 
   const owner = await resolveOwner(username);
-  if (!owner || owner._id.toString() !== req.user.id) {
-    return next(new AppError("Repository not found or unauthorized", 404));
+  if (!owner) {
+    return next(new AppError("Repository not found", 404));
+  }
+  if (owner._id.toString() !== req.user.id) {
+    return next(new AppError("Forbidden: You do not own this repository", 403));
   }
 
   const repository = await Repository.findOne({
@@ -200,7 +277,64 @@ export const deleteRepository = asyncHandler(async (req, res, next) => {
     return next(new AppError("Repository not found", 404));
   }
 
-  await repository.deleteOne();
+  const repoId = repository._id;
+  const repoPath = path.resolve(process.cwd(), "repositories", req.user.id, repository.name);
+
+  // Attempt filesystem removal first; log but do not block DB cleanup on failure
+  let fsRemoved = false;
+  try {
+    await fs.promises.rm(repoPath, { recursive: true, force: true });
+    fsRemoved = true;
+  } catch (fsErr) {
+    console.error(`[REPO_DELETE] fs.rm failed for ${repoPath}: ${fsErr.message}. Continuing with DB cleanup.`);
+  }
+
+  // Use a MongoDB transaction for atomic DB cleanup
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    // 1. Delete the repository document first
+    await repository.deleteOne({ session });
+
+    // 2. Nullify forkedFrom on repos that forked from this one
+    await Repository.updateMany(
+      { forkedFrom: repoId },
+      { $set: { forkedFrom: null } },
+      { session },
+    );
+
+    // 3. Remove this repo ID from forks arrays of other repos
+    await Repository.updateMany(
+      { forks: repoId },
+      { $pull: { forks: repoId } },
+      { session },
+    );
+
+    // 4. Delete orphaned Activity records referencing this repository
+    await Activity.deleteMany({ repository: repoId }, { session });
+
+    // 5. Delete PullRequest documents referencing this repository
+    await PullRequest.deleteMany({ repository: repoId }, { session });
+
+    await session.commitTransaction();
+  } catch (dbErr) {
+    await session.abortTransaction();
+    // If DB cleanup fails but filesystem was removed, log the inconsistency
+    if (fsRemoved) {
+      console.error(`[REPO_DELETE] DB cleanup failed after fs removal for repo ${repoId}: ${dbErr.message}. Orphaned filesystem directory.`);
+    }
+    return next(new AppError("Failed to delete repository due to database error", 500));
+  } finally {
+    session.endSession();
+  }
+
+  eventEmitter.emit('REPO_DELETED', {
+    actorId: req.user._id,
+    repositoryId: repository._id,
+    repoName: repository.name,
+    ipAddress: req.ip,
+  });
 
   sendSuccess(res, 200, null, "Repository deleted successfully");
 });
@@ -292,60 +426,43 @@ export const forkRepository = asyncHandler(async (req, res, next) => {
     return next(new AppError("You cannot fork your own repository", 400));
   }
 
+  // Check if already forked
+  const existing = await Repository.findOne({
+    owner: req.user.id,
+    forkedFrom: original._id,
+  });
+
+  if (existing) {
+    return next(new AppError("You have already forked this repository", 400));
+  }
+
+  let forkName = original.name;
+  const nameConflict = await Repository.findOne({
+    owner: req.user.id,
+    name: forkName,
+  });
+
+  if (nameConflict) {
+    forkName = `${original.name}-fork`;
+    const suffixConflict = await Repository.findOne({
+      owner: req.user.id,
+      name: forkName,
+    });
+    if (suffixConflict) {
+      return next(
+        new AppError(
+          `A repository named "${forkName}" already exists in your account. Please rename it first.`,
+          409,
+        ),
+      );
+    }
+  }
+
   const session = await mongoose.startSession();
   let forked;
 
   try {
     session.startTransaction();
-
-    const existingQuery = Repository.findOne({
-      name: reponame,
-      owner: req.user.id,
-      forkedFrom: original._id,
-    });
-    const existing =
-      typeof existingQuery?.session === "function"
-        ? await existingQuery.session(session)
-        : await existingQuery;
-
-    if (existing) {
-      await session.abortTransaction();
-      return next(new AppError("You have already forked this repository", 400));
-    }
-
-    // Resolve a safe fork name — auto-suffix if original name is taken
-    // by a non-fork repo already in the user's account
-    let forkName = original.name;
-    const nameConflictQuery = Repository.findOne({
-      owner: req.user.id,
-      name: forkName,
-    });
-    const nameConflict =
-      typeof nameConflictQuery?.session === "function"
-        ? await nameConflictQuery.session(session)
-        : await nameConflictQuery;
-
-    if (nameConflict) {
-      forkName = `${original.name}-fork`;
-      const suffixConflictQuery = Repository.findOne({
-        owner: req.user.id,
-        name: forkName,
-      });
-      const suffixConflict =
-        typeof suffixConflictQuery?.session === "function"
-          ? await suffixConflictQuery.session(session)
-          : await suffixConflictQuery;
-
-      if (suffixConflict) {
-        await session.abortTransaction();
-        return next(
-          new AppError(
-            `A repository named "${forkName}" already exists in your account. Please rename it first.`,
-            409,
-          ),
-        );
-      }
-    }
 
     [forked] = await Repository.create(
       [
@@ -363,49 +480,67 @@ export const forkRepository = asyncHandler(async (req, res, next) => {
       { session },
     );
 
-    original.forks.push(forked._id);
-    await original.save({ session });
+    await Repository.updateOne(
+      { _id: original._id },
+      { $push: { forks: forked._id } },
+      { session },
+    );
+
     await session.commitTransaction();
   } catch (error) {
     await session.abortTransaction();
-    return next(error);
+    return next(new AppError("Failed to fork repository", 500));
   } finally {
     session.endSession();
   }
 
-  // Clone filesystem storage from source to fork
   try {
-    const sourcePath = path.resolve(
+    const originalPath = path.resolve(
       process.cwd(),
       "repositories",
       original.owner.toString(),
       original.name,
     );
-
-    const targetPath = path.resolve(
+    const forkPath = path.resolve(
       process.cwd(),
       "repositories",
       req.user.id,
-      forked.name,
+      forkName,
     );
 
-    fs.mkdirSync(targetPath, { recursive: true });
-
-    if (fs.existsSync(path.join(sourcePath, ".git"))) {
-      const sourceGit = simpleGit(sourcePath);
-      const log = await sourceGit.log({ maxCount: 1 }).catch(() => ({ total: 0 }));
-      if (log.total > 0) {
-        await simpleGit().clone(sourcePath, targetPath);
-      } else {
-        await simpleGit(targetPath).init();
-      }
+    if (fs.existsSync(originalPath)) {
+      const git = simpleGit();
+      await git.clone(originalPath, forkPath);
     } else {
-      await simpleGit(targetPath).init();
+      fs.mkdirSync(forkPath, { recursive: true });
+      const git = simpleGit(forkPath);
+      await git.init();
+      const readmePath = path.join(forkPath, "README.md");
+      fs.writeFileSync(readmePath, generateReadme(forked, req.user.username));
+      const gitignorePath = path.join(forkPath, ".gitignore");
+      fs.writeFileSync(gitignorePath, generateGitignore(forked.language));
     }
   } catch (error) {
-    await Repository.deleteOne({ _id: forked._id });
-    return next(new AppError("Failed to copy repository storage during fork", 500));
+    await forked.deleteOne();
+    const ownerId = original.owner.toString();
+    await Repository.updateOne(
+      { _id: original._id },
+      { $pull: { forks: forked._id } },
+    );
+    return next(new AppError("Failed to initialize forked repository storage", 500));
   }
+
+  try {
+    await logActivity({
+      actor: req.user.id,
+      type: ACTIVITY_TYPES.REPOSITORY_FORKED,
+      repository: forked._id,
+      metadata: {
+        repoName: forked.name,
+        forkedFrom: original.name,
+      },
+    });
+  } catch {}
 
   sendSuccess(res, 201, forked, "Repository forked successfully");
 });
