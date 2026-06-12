@@ -17,6 +17,10 @@ const repositorySchema = new mongoose.Schema(
         default: '',
         trim: true,
     },
+    sourceUrl: {
+	type: String,
+	default: '',
+    },
     visibility: {
         type: String,
         enum: ['public', 'private'],
@@ -51,11 +55,22 @@ const repositorySchema = new mongoose.Schema(
         type: [String],
         default: [],
     },
+    collaborators: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+    ],
+    prCount: {
+        type: Number,
+        default: 0,
+    },
 },
-    { timestamps: true }  
+    { timestamps: true }
 );
 
 repositorySchema.index({ owner: 1, name: 1}, {unique: true});
+repositorySchema.index({ name: 'text', description: 'text', language: 'text', topics: 'text' });
 
 const Repository = mongoose.model('Repository', repositorySchema);
 export default Repository;

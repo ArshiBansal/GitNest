@@ -1,59 +1,175 @@
-import { useThemeStore } from "../store/useThemeStore";
+import { useState, useEffect } from "react";
+import { useThemeStore } from '../store/useThemeStore';
 import {
-  GitBranch,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  ArrowRight,
+    GitBranch,
+    ShieldCheck,
+    Sparkles,
+    Users,
+    ArrowRight,
+    Sun,
+    Moon,
+    Layers3,
+    Code2,
+    Wand2,
+    Shield,
+    Menu, 
+    X,
+    Copy,
+    Star
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { motion, AnimatePresence } from "framer-motion";
+import FAQ from "../components/FAQ/FAQ";
+import "../App.css";
+
+
+function Counter({ target, duration = 1500 }) {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let start = 0;
+        const increment = target / (duration / 16);
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+                setCount(target);
+                clearInterval(timer);
+            } else {
+                setCount(Math.floor(start));
+            }
+        }, 16);
+        return () => clearInterval(timer);
+    }, [target, duration]);
+
+    return <>{count}</>;
+}
 
 export default function GitNestHomepage() {
-  const features = [
-    {
-      title: "Version Control",
-      desc: "Create repositories, branches, pull requests, and commits with a modern collaborative workflow.",
-      icon: <GitBranch className="w-7 h-7 text-emerald-400" />,
-    },
-    {
-      title: "AI Workflows",
-      desc: "AI-assisted code reviews, commit summaries, onboarding, and contributor guidance.",
-      icon: <Sparkles className="w-7 h-7 text-emerald-400" />,
-    },
-    {
-      title: "Team Collaboration",
-      desc: "Built for contributors, maintainers, and open-source teams working together.",
-      icon: <Users className="w-7 h-7 text-emerald-400" />,
-    },
-    {
-      title: "Developer First",
-      desc: "Clean APIs, scalable architecture, and a contributor-friendly structure from day one.",
-      icon: <ShieldCheck className="w-7 h-7 text-emerald-400" />,
-    },
-  ];
+    const [activeLink, setActiveLink] = useState(() => {
+        if (typeof window !== "undefined" && window.location.hash) {
+            return window.location.hash;
+        }
 
-  const stats = [
-    { value: "MERN", label: "Full Stack" },
-    { value: "AI", label: "Developer Workflows" },
-    { value: "OSS", label: "Open Source" },
-    { value: "GSSoC", label: "Community Driven" },
-  ];
+        return "#home";
+    });
+    const { isDarkMode, toggleTheme } = useThemeStore();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [marqueePaused, setMarqueePaused] = useState(false);
 
-  const { isDarkMode, toggleTheme } = useThemeStore();
+    const marqueeItems = [
+        "MERN Stack",
+        "AI Workflows",
+        "Open Source",
+        "GSSoC 2026",
+        "DevOps",
+        "Realtime Collaboration",
+        "PR Reviews",
+        "Contributor Friendly",
+        "TypeScript",
+        "Node.js",
+        "MongoDB",
+    ];
 
-  return (
-    <div className="min-h-screen bg-white dark:bg-[#06070a] text-zinc-900 dark:text-white transition-colors overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-emerald-500/5 dark:bg-emerald-500/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-500/5 blur-[120px] rounded-full" />
-      </div>
+    const links = [
+        { name: "Contribution Guide", path: "/docs" },
+        { name: "Roadmap", path: "/docs" },
+        { name: "API Docs", path: "/docs" },
+        { name: "Architecture", path: "/docs" },
+    ];
+
+    const navLinks = [
+        { name: "Home", href: "#home" },
+        { name: "Features", href: "#features" },
+        { name: "FAQ", href: "#faq" },
+        { name: "Contributors", href: "#contributors" },
+    ];
+
+    const platformLinks = [
+        { name: "Repositories", path: "/login" },
+        { name: "Pull Requests", path: "/login" },
+        { name: "AI Workflows", path: "/docs" },
+        { name: "Discussions", path: "/login" },
+    ];
+
+    const userExperienceCards = [
+        {
+            name: "Shwetu",
+            quote: "The onboarding feels smooth and trustworthy — I knew exactly where to start.",
+            stars: 5,
+            accent: "from-[#00dc82]/20 to-[#4fd1ff]/20",
+        },
+        {
+            name: "Randhir Kumar Raj",
+            quote: "The dashboard gives instant confidence, and the contributor flow feels polished.",
+            stars: 5,
+            accent: "from-[#f59e0b]/20 to-[#22d3ee]/20",
+        },
+        {
+            name: "Amit Singh",
+            quote: "I trusted the experience from the first click — the design and feedback are excellent.",
+            stars: 4,
+            accent: "from-[#a78bfa]/20 to-[#38bdf8]/20",
+        },
+        {
+            name: "Pratyusha",
+            quote: "Fast, clear, and community-focused — it makes contribution feel welcoming.",
+            stars: 5,
+            accent: "from-[#22c55e]/20 to-[#2dd4bf]/20",
+        },
+    ];
+
+    const scrollReveal = {
+        hidden: {
+            opacity: 0,
+            y: 60,
+        },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.8,
+                ease: "easeOut",
+            },
+        },
+    };
+
+    const handleCopyUrl = async () => {
+        const repoUrl = `${window.location.origin}/Ankita15k/gitnest-core`;
+        
+        try {
+            await navigator.clipboard.writeText(repoUrl);
+            alert("Repository URL copied successfully!");
+        } catch (err) {
+            console.error("Failed to copy:", err);
+            alert("Failed to copy URL.");
+        }
+    };
+
+    return (
+
+        <div className="relative min-h-screen overflow-hidden bg-[#f6f8f7] dark:bg-[#07090d] text-zinc-900 dark:text-white transition-colors">
+
+            {/* BACKGROUND */}
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+
+                <div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,rgba(0,220,130,0.12),transparent_60%)] blur-3xl" />
+
+                <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-400/10 blur-3xl" />
+
+                <div className="absolute inset-0 opacity-[0.04]"
+                    style={{
+                        backgroundImage:
+                            "linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)",
+                        backgroundSize: "80px 80px",
+                    }}
+                />
+            </div>
 
       {/* Navbar */}
       <header className="fixed left-0 w-full top-0 z-50 border-b border-zinc-200 dark:border-white/5 backdrop-blur-xl bg-white/80 dark:bg-[#06070a]/80 transition-colors">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer select-none">
+          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={()=>window.scrollTo(0,0)}>
             <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-white flex items-center justify-center overflow-hidden shadow-2xl shadow-emerald-500/20 border border-zinc-200 dark:border-white/10 p-1">
               <img
                 src={logo}
@@ -132,22 +248,106 @@ export default function GitNestHomepage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative">
-        <div className="max-w-7xl mx-auto px-6 pt-28 pb-24 grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 text-emerald-300 text-sm mb-8">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Open Source • GSSoC 2026
-            </div>
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <>
+                        {/* Backdrop — click outside to close */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="lg:hidden fixed inset-0 z-40"
+                            onClick={() => setMobileMenuOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.25 }}
+                            className="lg:hidden fixed top-[88px] left-3 right-3 rounded-3xl border border-white/10 bg-white/95 dark:bg-[#0c0f14]/95 backdrop-blur-2xl shadow-2xl p-6 z-50"
+                        >
+                            <div className="flex flex-col gap-5">
+                                {navLinks.map((item) => (
+                                    <a
+                                        key={item.name}
+                                        href={item.href}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="text-lg font-medium text-zinc-800 dark:text-white"
+                                    >
+                                        {item.name}
+                                    </a>
+                                ))}
 
-            <h1 className="text-5xl md:text-7xl font-black leading-none tracking-tight mb-8">
-              Build the future of
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-cyan-400">
-                collaborative coding
-              </span>
-            </h1>
+                                <Link
+                                    to="/docs"
+                                    className="w-full text-center rounded-2xl border px-4 py-3"
+                                >
+                                    Documentation
+                                </Link>
+
+                                <Link
+                                    to="/register"
+                                    className="w-full text-center rounded-2xl bg-gradient-to-r from-[#00dc82] via-[#2be4da] to-[#4fd1ff] px-4 py-3 font-bold text-black"
+                                >
+                                    Start Contributing
+                                </Link>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* HERO */}
+            <section className="relative pt-25" id="home">
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-16 lg:gap-24 items-center overflow-hidden">
+
+                    {/* LEFT */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -60 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                            duration: 0.8,
+                            ease: "easeOut",
+                        }}
+                    >
+
+                        {/* BADGE */}
+                        <div className="inline-flex items-center gap-3 px-5 py-0 rounded-full border border-[#00dc82]/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl text-[#1edb8c] shadow-lg mb-10">
+
+                            <Sparkles className="w-4 h-4" />
+
+                            <span className="text-sm font-medium p-3">
+                                Open Source • GSSoC 2026
+                            </span>
+                        </div>
+
+                        {/* TITLE */}
+                        <motion.h1
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                duration: 0.8,
+                                delay: 0.2,
+                            }} className="text-[42px] sm:text-[50px] leading-[1] font-black break-words">
+
+                            <span className="block">
+                                Build the future
+                            </span>
+
+                            <span className="block">
+                                of
+                            </span>
+
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00dc82] via-[#36e4da] to-[#4fd1ff] drop-shadow-[0_10px_30px_rgba(0,220,130,0.25)]">
+                                collaborative
+                            </span>
+
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00dc82] via-[#36e4da] to-[#4fd1ff]">
+                                coding
+                            </span>
+                        </motion.h1>
 
                         {/* DESCRIPTION */}
                         <p className="text-[16px] leading-7 text-zinc-950 dark:text-zinc-300 max-w-2xl mb-5 mt-2">
@@ -183,30 +383,98 @@ export default function GitNestHomepage() {
             </div>
           </div>
 
-          {/* Right */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 blur-3xl rounded-full" />
+                                <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                                    GSSOC <br />Community
+                                </span>
+                            </div>
 
-            <div className="relative rounded-3xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-[#0d1016]/80 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40">
-              {/* Window Header */}
-              <div className="h-14 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-6 bg-zinc-100 dark:bg-white/[0.02]">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                </div>
+                            <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 rounded-2xl bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/10 flex items-center justify-center shadow-lg">
+                                    <Wand2 className="w-5 h-5 text-[#00dc82]" />
+                                </div>
 
-                <div className="text-xs text-zinc-500 tracking-widest uppercase">
-                  GitNest Dashboard
-                </div>
-              </div>
+                                <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                                    AI <br />Workflows
+                                </span>
+                            </div>
 
-              {/* Dashboard Preview */}
-              <div className="p-6 space-y-5">
-                <div className="rounded-2xl border border-emerald-400/10 bg-emerald-400/5 p-5">
-                  <div className="flex items-center justify-between mb-5">
-                    <div>
-                      <h3 className="font-bold text-lg">gitnest-core</h3>
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-2xl bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/10 flex items-center justify-center shadow-lg">
+                                    <Shield className="w-5 h-5 text-[#00dc82]" />
+                                </div>
+
+                                <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                                    Secure & Reliable
+                                </span>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* RIGHT DASHBOARD */}
+                    <motion.div
+                        className="relative pt-16 w-full overflow-hidden"
+                        initial={{ opacity: 0, x: 60, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        transition={{
+                            duration: 1,
+                            delay: 0.2,
+                            ease: "easeOut",
+                        }}
+                    >
+
+                        {/* ORBITAL EFFECT */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+
+                            <div className="w-[700px] h-[700px] border border-[#00dc82]/10 rounded-full" />
+
+                            <div className="absolute w-[520px] h-[520px] border border-cyan-400/10 rounded-full" />
+                        </div>
+
+                        {/* FLOATING DOTS */}
+                        <div className="absolute left-10 top-20 w-3 h-3 rounded-full bg-[#00dc82] shadow-[0_0_30px_#00dc82]" />
+
+                        <div className="absolute right-0 bottom-10 w-3 h-3 rounded-full bg-violet-400 shadow-[0_0_30px_#8b5cf6]" />
+
+                        {/* DASHBOARD */}
+                        <div className="relative w-full rounded-[36px] border border-white/40 dark:border-white/10 bg-white/70 dark:bg-[#0f131a]/80 backdrop-blur-2xl shadow-[0_30px_80px_rgba(15,23,42,0.12)] overflow-hidden">
+
+                            {/* TOP BAR */}
+                            <div className="h-14 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-8 bg-white/60 dark:bg-white/[0.02]">
+
+                                <div className="flex items-center gap-3">
+                                    <div className="w-3 h-3 rounded-full bg-red-400" />
+                                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                                    <div className="w-3 h-3 rounded-full bg-[#00dc82]" />
+                                </div>
+
+                                <div className="text-xs uppercase tracking-[0.25em] text-zinc-900">
+                                    GitNest Dashboard
+                                </div>
+                            </div>
+                            {/* CONTENT */}
+                            <div className="p-4 space-y-6">
+
+                                {/* REPO CARD */}
+                                <div className="relative overflow-hidden rounded-[28px] border border-[#00dc82]/10 bg-gradient-to-br from-white to-[#f3fffb] dark:from-[#11161d] dark:to-[#0f141a] p-6">
+
+                                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#00dc82]/10 blur-3xl rounded-full" />
+
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+
+                                        <div>
+                                            {/* COPY BUTTON SECTION */}
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h3 className="text-2xl font-black">
+                                                    gitnest-core
+                                                </h3>
+                                                <button
+                                                    onClick={handleCopyUrl}
+                                                    title="Copy Repository URL"
+                                                    className="p-1.5 text-zinc-500 hover:text-[#00dc82] bg-white/50 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] rounded-lg transition-colors flex items-center justify-center border border-zinc-200 dark:border-white/10 shadow-sm z-10"
+                                                >
+                                                    <Copy className="w-4 h-4" />
+                                                </button>
+                                            </div>
 
                       <p className="text-sm text-zinc-500 mt-1">
                         GitHub-inspired repository management with pull
@@ -219,18 +487,25 @@ export default function GitNestHomepage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="rounded-xl border border-white/5 bg-black/20 p-4">
-                      <div className="text-2xl font-black">42</div>
+                                    {/* STATS */}
+                                    <div className="grid grid-cols-3 gap-2 mt-4">
 
-                      <div className="text-xs text-zinc-500 mt-1">Stars</div>
-                    </div>
+                                        {[
+                                            { value: "42", label: "Stars", icon: <Sparkles className="w-5 h-5" /> },
+                                            { value: "18", label: "PRs", icon: <GitBranch className="w-5 h-5" /> },
+                                            { value: "9", label: "Contributors", icon: <Users className="w-5 h-5" /> },
+                                        ].map((item) => (
+                                            <div
+                                                key={item.label}
+                                                className="rounded-2xl border border-zinc-200 min-w-0 dark:border-white/5 bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl p-2 px-4 shadow-lg"
+                                            >
+                                                <div className="w-7 h-7 rounded-2xl bg-[#00dc82]/10 flex items-center justify-center text-[#00dc82] mb-5">
+                                                    {item.icon}
+                                                </div>
 
-                    <div className="rounded-xl border border-white/5 bg-black/20 p-4">
-                      <div className="text-2xl font-black">18</div>
-
-                      <div className="text-xs text-zinc-500 mt-1">PRs</div>
-                    </div>
+                                                <div className="text-3xl font-black mb-2">
+                                                    <Counter target={Number(item.value)} /> {/* <-- Restored the animated counter logic */}
+                                                </div>
 
                     <div className="rounded-xl border border-white/5 bg-black/20 p-4">
                       <div className="text-2xl font-black">9</div>
@@ -265,18 +540,24 @@ export default function GitNestHomepage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </section >
 
             {/* FEATURES */}
-            <section
+            < motion.section
+
+                variants={scrollReveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }
+                }
                 id="features"
                 className="relative py-32 overflow-hidden border-t border-zinc-200 dark:border-white/5 bg-[#f7faf9] dark:bg-[#080b11]"
             >
 
                 {/* BACKGROUND DECOR */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                < div className="absolute inset-0 overflow-hidden pointer-events-none" >
 
                     <div
                         className="absolute inset-0"
@@ -330,7 +611,7 @@ export default function GitNestHomepage() {
                             />
                         ))}
                     </div>
-                </div>
+                </div >
 
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
 
@@ -345,16 +626,21 @@ export default function GitNestHomepage() {
               Designed for contributors and maintainers
             </h2>
 
-            <p className="text-zinc-400 text-lg leading-8">
-              The UI system establishes a consistent design language so
-              contributors can confidently build new pages, dashboards,
-              workflows, and tools.
-            </p>
-          </div>
+                        {/* ACCENT LINE */}
+                        <div className="flex items-center gap-3 mb-8">
+
+                            <div className="w-12 h-1 rounded-full bg-gradient-to-r from-[#00dc82] to-[#36e4da]" />
+
+                            <div className="w-2 h-2 rounded-full bg-[#00dc82]" />
+
+                        </div>
+                        <p className="text-[20px] leading-10 text-[#64748b] dark:text-zinc-400 max-w-3xl">
+                            The UI system establishes a consistent design language so contributors can confidently build new pages, dashboards, workflows, and tools.
+                        </p>
+                    </div>
 
                     {/* FEATURE GRID */}
                     <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
-
                         {[
                             {
                                 title: "Version Control",
@@ -388,26 +674,40 @@ export default function GitNestHomepage() {
                                 bg: "from-[#fff7f0] to-[#fffaf7]",
                                 darkBg: "dark:from-[#21140d] dark:to-[#18110e]",
                             },
-                        ].map((feature) => (
+                        ].map((feature, index) => (
 
-                            <div
+                            <motion.div
                                 key={feature.title}
-                                className={`group relative overflow-hidden rounded-[34px] border border-white/60 dark:border-white/5 bg-gradient-to-br ${feature.bg} ${feature.darkBg} backdrop-blur-xl p-8 shadow-[0_10px_40px_rgba(15,23,42,0.05)] hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)] transition-all duration-500`}
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{
+                                    duration: 0.6,
+                                    delay: index * 0.15,
+                                }}
+                                className={`group relative overflow-hidden rounded-[34px] border border-white/60 dark:border-white/5 bg-gradient-to-br ${feature.bg} ${feature.darkBg} backdrop-blur-xl p-8  hover:-translate-y-3 hover:shadow-[0_0_40px_rgba(255,255,255,0.12)] shadow-[0_10px_40px_rgba(15,23,42,0.05)]transition-all duration-500`}
                             >
-
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/55 via-white/15 to-transparent dark:from-white/6 dark:via-white/0 pointer-events-none" />
 
                                 {/* TOP GLOW */}
                                 <div
-                                    className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20"
+                                    className="absolute top-0 right-0 w-34 h-34 rounded-full blur-3xl opacity-20 group-hover:opacity-60 transition-all duration-500"
                                     style={{
                                         background: feature.color,
                                     }}
                                 />
 
+                                {/* GLOW */}
+                                <div
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-[34px] pointer-events-none"
+                                style={{
+                                    boxShadow: `0 0 50px ${feature.color}60`,
+                                }}
+                                />
+
                                 {/* ICON */}
                                 <div
-                                    className="relative w-20 h-20 rounded-[24px] border border-white/60 flex items-center justify-center shadow-inner mb-10"
+                                    className="relative w-20 h-20 rounded-[24px] border border-white/60 flex items-center justify-center shadow-inner mb-10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
                                     style={{
                                         background: `${feature.color}10`,
                                     }}
@@ -421,7 +721,7 @@ export default function GitNestHomepage() {
                                 <div className="flex items-center gap-2 mb-6">
 
                                     <div
-                                        className="w-10 h-1 rounded-full"
+                                        className="w-10 h-1 rounded-full group-hover:w-16 transition-all duration-500"
                                         style={{
                                             background: feature.color,
                                         }}
@@ -463,50 +763,60 @@ export default function GitNestHomepage() {
                                     }}
                                 >
                                     <div
-                                        className="w-3 h-3 rounded-full"
+                                        className="w-3 h-3 rounded-full group-hover:scale-125 transition-all duration-500"
                                         style={{
                                             background: feature.color,
                                         }}
                                     />
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
-            </section>
+            </motion.section >
+
+            {/* FAQ SECTION */}
+            <FAQ />
+
             {/* Contributor CTA */}
-            <section
+            < motion.section
+                variants={scrollReveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
                 id="contributors"
                 className="relative py-32 overflow-hidden border-t border-[#dce7e3] dark:border-white/5 bg-[#f7faf9] dark:bg-[#080b11]"
             >
 
                 {/* BACKGROUND EFFECTS */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                < div className="absolute inset-0 overflow-hidden pointer-events-none" >
 
                     {/* MAIN GLOW */}
-                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-r from-[#00dc82]/10 to-[#4fd1ff]/10 blur-3xl rounded-full" />
+                    < div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-r from-[#00dc82]/10 to-[#4fd1ff]/10 blur-3xl rounded-full" />
 
                     {/* LEFT BLOB */}
-                    <div className="absolute left-[-120px] top-28 w-[320px] h-[320px] rounded-full bg-gradient-to-br from-[#a7f3d0]/40 to-[#d9f99d]/20 blur-2xl" />
+                    < div className="absolute left-[-120px] top-28 w-[320px] h-[320px] rounded-full bg-gradient-to-br from-[#a7f3d0]/40 to-[#d9f99d]/20 blur-2xl" />
 
                     {/* SMALL FLOATING CIRCLE */}
-                    <div className="absolute left-[14%] bottom-24 w-14 h-14 rounded-full bg-gradient-to-br from-[#d9f99d]/70 to-[#bef264]/40 blur-sm border border-white/40" />
+                    < div className="absolute left-[14%] bottom-24 w-14 h-14 rounded-full bg-gradient-to-br from-[#d9f99d]/70 to-[#bef264]/40 blur-sm border border-white/40" />
 
                     {/* RIGHT CODE ICON GLOW */}
-                    <div className="absolute right-[8%] top-[26%] w-[260px] h-[260px] rounded-full bg-gradient-to-br from-[#00dc82]/20 to-[#fde047]/20 blur-3xl" />
+                    < div className="absolute right-[8%] top-[26%] w-[260px] h-[260px] rounded-full bg-gradient-to-br from-[#00dc82]/20 to-[#fde047]/20 blur-3xl" />
 
                     {/* DOT GRID */}
-                    <div className="absolute top-16 right-[12%] grid grid-cols-5 gap-5 opacity-20">
-                        {Array.from({ length: 25 }).map((_, i) => (
-                            <div
-                                key={i}
-                                className="w-1.5 h-1.5 rounded-full bg-[#00dc82]"
-                            />
-                        ))}
-                    </div>
+                    < div className="absolute top-16 right-[12%] grid grid-cols-5 gap-5 opacity-20" >
+                        {
+                            Array.from({ length: 25 }).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="w-1.5 h-1.5 rounded-full bg-[#00dc82]"
+                                />
+                            ))
+                        }
+                    </div >
 
                     {/* LEFT CURVE */}
-                    <svg
+                    < svg
                         className="absolute left-0 bottom-10 opacity-30"
                         width="420"
                         height="180"
@@ -525,10 +835,9 @@ export default function GitNestHomepage() {
                                 <stop offset="1" stopColor="#00dc82" />
                             </linearGradient>
                         </defs>
-                    </svg>
-
+                    </svg >
                     {/* RIGHT CURVE */}
-                    <svg
+                    < svg
                         className="absolute right-0 top-36 opacity-30"
                         width="420"
                         height="220"
@@ -547,8 +856,8 @@ export default function GitNestHomepage() {
                                 <stop offset="1" stopColor="#00dc82" />
                             </linearGradient>
                         </defs>
-                    </svg>
-                </div>
+                    </svg >
+                </div >
 
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
 
@@ -563,17 +872,81 @@ export default function GitNestHomepage() {
                             <div className="relative text-6xl font-black bg-gradient-to-r from-[#00dc82] to-[#4fd1ff] bg-clip-text text-transparent">
                                 {"</>"}
                             </div>
+
+                        </div>
+
+                        <div className="mb-10 flex flex-col gap-4 text-left">
+
+                            <div className="rounded-[28px] border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-white/[0.03] p-4 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+                                <div className="flex items-center justify-between gap-3 mb-3">
+                                    <div>
+                                        <p className="text-[12px] uppercase tracking-[0.25em] text-zinc-500 dark:text-zinc-400">User experience</p>
+                                        <h3 className="text-[18px] md:text-[22px] font-black tracking-[-0.04em] text-zinc-900 dark:text-white">Trusted by contributors who love the flow</h3>
+                                    </div>
+                                    <div className="rounded-full border border-[#00dc82]/20 bg-[#00dc82]/10 px-3 py-1 text-[12px] font-semibold text-[#047857] dark:text-[#86efac]">Live trust signals</div>
+                                </div>
+
+                                <div
+                                    className="relative overflow-hidden rounded-[24px] border border-zinc-200/80 dark:border-white/10 bg-gradient-to-r from-white via-[#f5fff9] to-white dark:from-[#0b131d] dark:via-[#0f1723] dark:to-[#0b131d] p-3"
+                                    onMouseEnter={() => setMarqueePaused(true)}
+                                    onMouseLeave={() => setMarqueePaused(false)}
+                                    onFocus={() => setMarqueePaused(true)}
+                                    onBlur={() => setMarqueePaused(false)}
+                                >
+                                    <div
+                                        className="flex w-max gap-4 py-1 animate-marquee-right"
+                                        style={{ animationPlayState: marqueePaused ? 'paused' : 'running' }}
+                                    >
+                                        {[...userExperienceCards, ...userExperienceCards].map((item, i) => {
+                                            const initials = `${item.name.split(' ')[0][0]}${item.name.split(' ').at(-1)[0]}`.toUpperCase();
+
+                                            return (
+                                                <article
+                                                    key={`${item.name}-${i}`}
+                                                    className="w-[280px] rounded-[24px] border border-zinc-200/80 dark:border-white/10 bg-white/90 dark:bg-[#111827]/90 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
+                                                >
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.accent} border border-zinc-200/80 dark:border-white/10 text-sm font-black text-zinc-900 dark:text-white`}>
+                                                            {initials}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-[15px] font-black text-zinc-900 dark:text-white">{item.name}</h4>
+                                                            <p className="text-[12px] text-zinc-500 dark:text-zinc-400">Community contributor</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <p className="text-[14px] leading-6 text-zinc-700 dark:text-zinc-300">“{item.quote}”</p>
+
+                                                    <div className="mt-4 flex items-center justify-between">
+                                                        <div className="flex items-center gap-1 text-[#f59e0b]">
+                                                            {Array.from({ length: item.stars }).map((_, starIndex) => (
+                                                                <Star key={`${item.name}-${starIndex}`} className="h-4 w-4 fill-current" />
+                                                            ))}
+                                                        </div>
+                                                        <span className="rounded-full bg-[#00dc82]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#047857] dark:text-[#86efac]">{item.stars}.0/5</span>
+                                                    </div>
+                                                </article>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* TOP BADGE */}
-                        <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-[#b8f0dd] bg-white/70 backdrop-blur-xl shadow-sm mb-10">
-
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                duration: 0.5,
+                                delay: 0.1,
+                            }} className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-[#b8f0dd] bg-white/70 backdrop-blur-xl shadow-sm mb-10">
                             <Users className="w-5 h-5 text-[#00b86b]" />
 
                             <span className="text-[15px] font-bold tracking-[0.18em] uppercase bg-gradient-to-r from-[#00b86b] to-[#4fd1ff] bg-clip-text text-transparent">
                                 Open Source Collaboration
                             </span>
-                        </div>
+                        </motion.div>
 
                         {/* TITLE */}
                         <h2 className="text-[52px] md:text-[82px] leading-[0.95] tracking-[-0.06em] font-black text-[#071138] dark:text-white mb-8">
@@ -619,20 +992,47 @@ export default function GitNestHomepage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </motion.section >
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-200 dark:border-white/5 py-14">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12">
-          <div>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-white flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-white/10 p-1">
-                <img
-                  src={logo}
-                  alt="GitNest Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+            {/* Footer */}
+            < motion.footer
+                variants={scrollReveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                className="relative overflow-hidden border-t border-[#dce7e3] bg-[#f8fbfa] dark:bg-[#080b11] py-14" >
+
+                {/* BACKGROUND EFFECTS */}
+                < div className="absolute inset-0 overflow-hidden pointer-events-none" >
+
+                    {/* TOP GRADIENT */}
+                    < div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[220px] bg-gradient-to-r from-[#00dc82]/10 via-[#4fd1ff]/10 to-[#d9f99d]/10 blur-3xl rounded-full" />
+
+                    {/* LEFT GLOW */}
+                    < div className="absolute left-[-80px] bottom-0 w-[240px] h-60 bg-[#4fd1ff]/10 blur-3xl rounded-full" />
+
+                    {/* RIGHT GLOW */}
+                    < div className="absolute right-[-80px] top-0 w-[240px] h-60 bg-[#00dc82]/10 blur-3xl rounded-full" />
+                </div >
+
+                <div className="relative z-10 max-w-7xl mx-auto px-6">
+
+                    {/* MAIN GRID */}
+                    <div className="grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-4 items-start">
+                        {/* BRAND */}
+                        <div>
+
+                            <div className="flex items-center gap-4 mb-7" onClick={()=>window.scrollTo(0,0)}>
+
+                                {/* LOGO */}
+                                <div className="w-14 h-14 rounded-[20px] bg-white border border-[#e4ece8] shadow-[0_10px_30px_rgba(15,23,42,0.06)] flex items-center justify-center overflow-hidden p-2">
+
+                                    <img
+                                        src={logo}
+                                        alt="GitNest Logo"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
 
               <div>
                 <h3 className="font-black text-xl tracking-tight text-zinc-900 dark:text-white">
@@ -651,34 +1051,30 @@ export default function GitNestHomepage() {
                                 A modern collaborative development platform inspired by GitHub and built for open source communities worldwide.
                             </p>
 
-                            {/* COPYRIGHT */}
-                            <p className="text-[15px] text-[#7c8aa5] leading-7">
-                                © 2026 GitNest. Built for open-source collaboration.
-                            </p>
                         </div>
 
-          <div>
-            <h4 className="font-semibold mb-5">Platform</h4>
+                        {/* PLATFORM */}
+                        <div>
+
+                            <h4 className="text-[22px] font-black tracking-[-0.04em] text-[#071138] dark:text-white mb-8 ">
+                                Platform
+                            </h4>
 
                             <div className="space-y-3">
 
-                                {[
-                                    "Repositories",
-                                    "Pull Requests",
-                                    "AI Workflows",
-                                    "Discussions",
-                                ].map((item) => (
-                                    <a
-                                        key={item}
-                                        href="#"
+                                {platformLinks.map((item) => (
+                                    <Link
+                                        key={item.name}
+                                        onClick={()=> window.scrollTo(0,0)}
+                                        to={item.path}
                                         className="group flex items-center gap-3 text-[17px] text-[#475569] hover:text-[#00b86b] transition-all duration-300"
                                     >
 
                                         <div className="w-2 h-2 rounded-full bg-[#00c97b] group-hover:scale-150 transition-transform" />
 
-                                        {item}
+                                        {item.name}
 
-                                    </a>
+                                    </Link>
                                 ))}
                             </div>
                         </div>
@@ -688,42 +1084,51 @@ export default function GitNestHomepage() {
 
                             <div className="space-y-3">
 
-                                {[
-                                    "Contribution Guide",
-                                    "Roadmap",
-                                    "API Docs",
-                                    "Architecture",
-                                ].map((item) => (
-                                    <a
-                                        key={item}
-                                        href="#"
+                                {links.map((item) => (
+                                    <Link
+                                        key={item.name}
+                                        to={item.path}
+                                        onClick={()=>window.scrollTo(0,0)}
                                         className="group flex items-center gap-3 text-[17px] text-[#475569] hover:text-[#00b86b] transition-all duration-300"
                                     >
 
                                         <div className="w-2 h-2 rounded-full bg-[#00c97b] group-hover:scale-150 transition-transform" />
 
-                                        {item}
+                                        {item.name}
 
-                                    </a>
+                                    </Link>
                                 ))}
 
                                 {/* LEGAL LINK */}
                                 <Link
                                     to="/terms"
+                                    onClick={()=> window.scrollTo(0,0)}
                                     className="group flex items-center gap-3 text-[16px] text-[#475569] hover:text-[#00b86b] transition-all duration-300"
                                 >
                                     <div className="w-2 h-2 rounded-full bg-[#00c97b] group-hover:scale-150 transition-transform" />
 
                                     Terms & Conditions
                                 </Link>
+
+                                <Link
+                                    to="/contact"
+                                    onClick={()=>window.scrollTo(0,0)}
+                                    className="group flex items-center gap-3 text-[16px] text-[#475569] hover:text-[#00b86b] transition-all duration-300"
+                                >
+                                    <div className="w-2 h-2 rounded-full bg-[#00c97b] group-hover:scale-150 transition-transform" />
+                                    Contact Us
+                                </Link>
                             </div>
                         </div>
 
-          <div>
-            <h4 className="font-semibold mb-5">Tech Stack</h4>
+                        {/* TECH STACK */}
+                        <div >
 
-                            <div className="flex flex-wrap gap-2">
+                            <h4 className="text-[22px] font-black tracking-[-0.04em] text-[#071138] dark:text-white mb-8 text-centre flex flex-col items-center">
+                                Tech Stack
+                            </h4>
 
+                            <div className="grid grid-cols-2 gap-4 ">
                                 {[
                                     "React",
                                     "Tailwind",
@@ -736,10 +1141,10 @@ export default function GitNestHomepage() {
                                 ].map((tech) => (
                                     <div
                                         key={tech}
-                                        className="px-5 py-3 rounded-2xl border border-[#e6ece9] bg-white shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-[15px] font-medium text-[#334155] flex items-center gap-3"
+                                        className="w-full px-4 py-3 rounded-2xl border border-[#e6ece9] bg-white shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-[15px] font-medium text-[#334155] flex items-center gap-3 justify-center"
                                     >
 
-                                        <div className="w-2 h-2 rounded-full bg-[#00c97b]" />
+                                        <div className="w-2 h-2 min-w-[8px] min-h-[8px] rounded-full bg-[#00c97b]" />
 
                                         {tech}
 
@@ -750,10 +1155,17 @@ export default function GitNestHomepage() {
                         </div>
 
 
+                        </div>
+                    </div>
+                    <div className="mt-10 pt-6 border-t border-[#dce7e3] dark:border-zinc-800 flex justify-center items-center">
+                        <p className="text-[15px] text-[#64748b] dark:text-zinc-400 ">
+                            © 2026 GitNest. Built for open-source collaboration.
+                        </p>
                     </div>
                 </div>
-            </footer>
-        </div>
+
+            </motion.footer >
+        </div >
 
     );
 };
