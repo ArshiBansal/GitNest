@@ -15,6 +15,8 @@ import paginate, { buildPaginationMeta } from "../utils/paginate.js";
 import { generateReadme } from "../utils/templates/readmeTemplates.js";
 import { generateGitignore } from "../utils/templates/gitignoreTemplates.js";
 import eventEmitter from '../events/eventEmitter.js';
+import Notification from "../models/Notification.model.js";
+import BranchProtectionRule from "../models/BranchProtectionRule.model.js";
 
 // DRY helper — resolves a :username param to the owner document's _id.
 // Returns null when the username does not exist so callers can 404 cleanly.
@@ -50,30 +52,38 @@ export const createRepository = asyncHandler(async (req, res, next) => {
     topics,
   });
 
-  try {
-    const repoPath = path.resolve(
-      process.cwd(),
-      "repositories",
-      req.user.id,
-      repository.name,
-    );
+try {
+  const repoPath = path.resolve(
+    process.cwd(),
+    "repositories",
+    req.user.id,
+    repository.name,
+  );
 
-    fs.mkdirSync(repoPath, { recursive: true });
+  fs.mkdirSync(repoPath, { recursive: true });
 
-    const git = simpleGit(repoPath);
+  const git = simpleGit(repoPath);
 
-    await git.init();
+  await git.init();
 
-    const readmePath = path.join(repoPath, "README.md");
-    fs.writeFileSync(readmePath, generateReadme(repository, req.user.username));
+  const readmePath = path.join(repoPath, "README.md");
+  fs.writeFileSync(readmePath, generateReadme(repository, req.user.username));
 
-    const gitignorePath = path.join(repoPath, ".gitignore");
-    fs.writeFileSync(gitignorePath, generateGitignore(repository.language));
-  } catch (error) {
+  const gitignorePath = path.join(repoPath, ".gitignore");
+  fs.writeFileSync(gitignorePath, generateGitignore(repository.language));
+} catch (error) {
+  
+  const isNonFatalWindowsWarning =
+    error.message?.includes('language override unsupported') ||
+    error.message?.includes('warning:');
+
+  if (!isNonFatalWindowsWarning) {
     await repository.deleteOne();
-
     return next(new AppError("Failed to initialize repository storage", 500));
   }
+
+  console.warn(`[REPO_CREATE] Non-fatal git warning ignored: ${error.message}`);
+}
 
   try {
     await logActivity({
@@ -316,7 +326,8 @@ export const deleteRepository = asyncHandler(async (req, res, next) => {
 
     // 5. Delete PullRequest documents referencing this repository
     await PullRequest.deleteMany({ repository: repoId }, { session });
-
+    await Notification.deleteMany({ repository: repoId },{ session },);
+    await BranchProtectionRule.deleteMany({ repositoryId: repoId },{ session },);
     await session.commitTransaction();
   } catch (dbErr) {
     await session.abortTransaction();
