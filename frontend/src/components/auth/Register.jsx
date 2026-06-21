@@ -186,7 +186,7 @@ const Register = () => {
           {/* LEFT */}
           <div className="lg:pr-8">
             {/* BADGE */}
-            <div className="inline-flex items-center gap-3 px-5 py-0 rounded-full border border-[#00dc82]/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl text-[#1edb8c] shadow-lg mb-8">
+            <div className="inline-flex items-center gap-3 px-5 py-0 rounded-full border border-[#00dc82]/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl text-[#1edb8c] shadow-lg mb-10">
               <Sparkles className="w-4 h-4" />
 
               <span className="text-sm font-medium p-3">• Join GitNest</span>
@@ -195,14 +195,16 @@ const Register = () => {
             {/* TITLE */}
             <h1 className="text-[42px] md:text-[48px] lg:text-[52px] leading-[1.05] font-black tracking-tighter">
               <span className="block">Start Collaborating</span>
+
               <span className="block">with</span>
+
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00dc82] via-[#36e4da] to-[#4fd1ff] drop-shadow-[0_10px_30px_rgba(0,220,130,0.25)]">
                 GitNest
               </span>
             </h1>
 
             {/* DESCRIPTION */}
-            <p className="text-[16px] leading-7 text-zinc-950 dark:text-zinc-400 max-w-2xl mb-6 mt-3">
+            <p className="text-[16px] leading-7 text-zinc-950 dark:text-zinc-400 max-w-2xl mb-5 mt-2">
               GitNest is a full-featured GitHub-inspired platform built with the
               MERN stack. Create repositories, browse code, manage issues,
               review pull requests, and collaborate — all in one open-source
@@ -210,7 +212,7 @@ const Register = () => {
             </p>
 
             {/* TRACKS */}
-            <div className="grid grid-cols-2 md:flex md:flex-wrap items-start gap-x-8 gap-y-6 mb-8">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6 mt-8">
               <div className="flex items-center gap-4">
                 <div className="w-8 h-8 rounded-2xl bg-white dark:bg-white/[0.03] border border-zinc-200 dark:border-white/10 flex items-center justify-center shadow-lg flex-shrink-0">
                   <Wand2 className="w-5 h-5 text-[#00dc82]" />
@@ -254,7 +256,7 @@ const Register = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 rounded-[28px] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] backdrop-blur-2xl px-5 py-4 shadow-xl max-w-xs">
+            <div className="mt-10 flex items-center gap-4 rounded-[28px] border border-white/50 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] backdrop-blur-2xl px-5 py-4 shadow-xl max-w-xs">
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div
@@ -265,11 +267,11 @@ const Register = () => {
               </div>
 
               <div>
-                <p className="font-semibold text-zinc-800 dark:text-white">
+                <p className="font-semibold text-zinc-800 dark:text-white text-sm">
                   Trusted by developers worldwide
                 </p>
 
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Open source • Community driven • Secure
                 </p>
               </div>
@@ -277,7 +279,7 @@ const Register = () => {
           </div>
 
           {/* Card */}
-          <div className="relative rounded-[2rem] border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-[#0d1016]/80 backdrop-blur-xl p-8 md:p-10 shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden">
+          <div className="relative rounded-[2rem] border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-[#0d1016]/80 backdrop-blur-xl p-8 md:p-9 shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/18 to-transparent dark:from-white/8 dark:via-white/0 pointer-events-none" />
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
             <div className="relative z-10 space-y-6">
@@ -508,7 +510,7 @@ const Register = () => {
                     window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/v1/auth/github`;
                   }}
                   type="button"
-                  className="w-full py-3 rounded-2xl font-semibold border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white transition-all duration-300 shadow-sm"
+                  className="w-full py-3 rounded-2xl font-semibold border border-zinc-300 dark:border-white/20 bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-white text-zinc-800 transition-all duration-300 shadow-sm"
                 >
                   Continue with GitHub
                 </button>
