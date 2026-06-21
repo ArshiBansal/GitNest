@@ -63,10 +63,12 @@ router.get(
 
 router.get(
   "/github/callback",
-  passport.authenticate("github", {
-    session: false,
-    failureRedirect: "/login",
-  }),
+  (req, res, next) => {
+    passport.authenticate("github", {
+      session: false,
+      failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`,
+    })(req, res, next);
+  },
   async (req, res) => {
     const jwt = generateToken(req.user._id);
     const code = crypto.randomBytes(32).toString("hex");
@@ -108,18 +110,15 @@ router.post("/exchange", exchangeLimiter, async (req, res) => {
     return res.status(400).json({ message: "Invalid exchange code format" });
   }
 
-  const redis = getRedisClient();
+ const redis = getRedisClient();
   let jwt = null;
 
   if (redis) {
-    const stored = await redis.get(`${CODE_PREFIX}${code}`);
-    if (stored) {
-      // Constant-time comparison on the code lookup
-      const lookupKey = `${CODE_PREFIX}${code}`;
-      const raw = await redis.getdel(lookupKey);
-      if (raw) {
-        jwt = raw;
-      }
+    // Single atomic GETDEL — eliminates redundant GET call
+    // and closes the race condition window between GET and GETDEL
+    const raw = await redis.getdel(`${CODE_PREFIX}${code}`);
+    if (raw) {
+      jwt = raw;
     }
   } else {
     const fallbackStore = global.__oauthFallbackStore;
@@ -135,7 +134,7 @@ router.post("/exchange", exchangeLimiter, async (req, res) => {
   }
 
   if (!jwt) {
-    logFailedExchange(clientIp, code.substring(0, 8), jwt === null ? "not_found_or_expired" : "deleted");
+    logFailedExchange(clientIp, code.substring(0, 8), "not_found_or_expired");
     return res.status(401).json({ message: "Invalid or expired exchange code" });
   }
 
